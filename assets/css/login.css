@@ -1,0 +1,583 @@
+:root {
+    --primary: #003b82;
+    --primary-dark: #00245a;
+    --primary-light: #0d6ed1;
+    --text: #10234a;
+    --muted: #74809a;
+    --border: #dbe2ec;
+    --background: #f4f7fb;
+    --white: #ffffff;
+    --shadow: 0 18px 55px rgba(29, 50, 84, 0.16);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    font-family: Arial, Helvetica, sans-serif;
+    color: var(--text);
+    background: var(--background);
+}
+
+button,
+input {
+    font: inherit;
+}
+
+button,
+label,
+a {
+    -webkit-tap-highlight-color: transparent;
+}
+
+.login-layout {
+    display: grid;
+    grid-template-columns: minmax(360px, 44%) 1fr;
+    min-height: 100vh;
+}
+
+/* PANEL IZQUIERDO */
+
+.login-visual {
+    position: relative;
+    overflow: hidden;
+    padding: 50px 60px;
+    color: var(--white);
+    background:
+        linear-gradient(
+            145deg,
+            rgba(0, 60, 130, 0.95),
+            rgba(0, 27, 72, 0.98)
+        );
+}
+
+/*
+Aquí se colocará después la imagen del plantel:
+
+background:
+    linear-gradient(...),
+    url("../img/fondo-cbtis270.jpg") center / cover no-repeat;
+*/
+
+.login-visual::after {
+    content: "";
+    position: absolute;
+    top: -8%;
+    right: -120px;
+    width: 185px;
+    height: 116%;
+    background: var(--background);
+    border-left: 9px solid rgba(255, 255, 255, 0.8);
+    border-radius: 50% 0 0 50%;
+}
+
+.visual-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(
+            circle at 40% 20%,
+            rgba(31, 128, 223, 0.25),
+            transparent 34%
+        );
+}
+
+.visual-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    width: min(100%, 440px);
+    min-height: calc(100vh - 100px);
+}
+
+.logo-placeholder {
+    display: grid;
+    place-items: center;
+    width: 210px;
+    min-height: 175px;
+    margin: 0 auto 10px;
+    padding: 20px;
+    border: 2px dashed rgba(255, 255, 255, 0.58);
+    border-radius: 50%;
+    text-align: center;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.82);
+}
+
+/*
+Después este bloque se puede reemplazar por:
+
+.logo-cbtis {
+    width: 210px;
+    height: auto;
+}
+*/
+
+.school-number {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 55px;
+}
+
+.school-number span {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.school-number strong {
+    font-size: clamp(3.6rem, 7vw, 5.5rem);
+    line-height: 0.9;
+    letter-spacing: 2px;
+}
+
+.school-number small {
+    margin-top: 12px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.platform-description {
+    margin-bottom: 35px;
+}
+
+.platform-description h1 {
+    max-width: 380px;
+    margin-bottom: 18px;
+    font-size: clamp(1.8rem, 3vw, 2.45rem);
+    line-height: 1.12;
+}
+
+.platform-description h1 span {
+    color: #48a2ff;
+}
+
+.platform-description p {
+    max-width: 390px;
+    color: rgba(255, 255, 255, 0.84);
+    line-height: 1.6;
+}
+
+.features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 35px;
+}
+
+.feature {
+    text-align: center;
+}
+
+.feature-icon {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 10px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 50%;
+    font-size: 1.3rem;
+}
+
+.feature p {
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.motivation-card {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-top: auto;
+    padding: 20px 24px;
+    border-radius: 14px;
+    color: var(--primary-dark);
+    background: rgba(255, 255, 255, 0.88);
+}
+
+.motivation-logo {
+    display: grid;
+    place-items: center;
+    flex: 0 0 60px;
+    height: 60px;
+    border: 2px dashed #7b91ac;
+    border-radius: 12px;
+    font-size: 0.75rem;
+}
+
+.motivation-card p {
+    line-height: 1.45;
+}
+
+.motivation-card strong {
+    color: #1267c5;
+}
+
+/* PANEL DERECHO */
+
+.login-section {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px clamp(30px, 7vw, 100px) 20px;
+}
+
+.login-card {
+    width: min(100%, 510px);
+    margin: auto;
+    padding: clamp(30px, 5vw, 55px);
+    border-radius: 24px;
+    background: var(--white);
+    box-shadow: var(--shadow);
+}
+
+.login-header {
+    margin-bottom: 35px;
+    text-align: center;
+}
+
+.login-header h2 {
+    margin-bottom: 8px;
+    font-size: clamp(1.8rem, 4vw, 2.35rem);
+    color: var(--primary-dark);
+}
+
+.login-header p {
+    color: var(--muted);
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group > label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+}
+
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    min-height: 58px;
+    padding: 0 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--white);
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.input-wrapper:focus-within {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 4px rgba(13, 110, 209, 0.12);
+}
+
+.input-icon {
+    margin-right: 13px;
+    opacity: 0.7;
+}
+
+.input-wrapper input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    color: var(--text);
+    background: transparent;
+}
+
+.input-wrapper input::placeholder {
+    color: #8b95a8;
+}
+
+.password-toggle {
+    padding: 7px;
+    border: 0;
+    cursor: pointer;
+    background: transparent;
+    opacity: 0.75;
+}
+
+.forgot-password {
+    margin: 4px 0 22px;
+    text-align: right;
+}
+
+.forgot-password a {
+    color: var(--primary-light);
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.role-selector {
+    margin-bottom: 24px;
+    border: 0;
+}
+
+.role-selector legend {
+    margin-bottom: 13px;
+    font-weight: 700;
+}
+
+.role-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.role-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 82px;
+    padding: 12px 8px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 0.86rem;
+    font-weight: 700;
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.role-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary-light);
+}
+
+.role-card input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.role-card.active {
+    color: var(--white);
+    border-color: var(--primary);
+    background: var(--primary);
+}
+
+.role-icon {
+    margin-bottom: 6px;
+    font-size: 1.45rem;
+}
+
+.login-button,
+.google-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 56px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.login-button {
+    border: 0;
+    color: var(--white);
+    background: linear-gradient(
+        90deg,
+        var(--primary),
+        var(--primary-dark)
+    );
+}
+
+.login-button:hover {
+    filter: brightness(1.08);
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 28px 0 20px;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+.google-button {
+    border: 1px solid var(--border);
+    color: var(--text);
+    background: var(--white);
+}
+
+.google-button:hover {
+    background: #f8fafc;
+}
+
+.google-icon {
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: #4285f4;
+}
+
+.login-footer {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px 35px;
+    width: 100%;
+    margin: 35px auto 0;
+    color: #52668a;
+    font-size: 0.78rem;
+}
+
+/* TABLET */
+
+@media (max-width: 1050px) {
+    .login-layout {
+        grid-template-columns: 40% 60%;
+    }
+
+    .login-visual {
+        padding: 40px 30px;
+    }
+
+    .features {
+        grid-template-columns: 1fr;
+    }
+
+    .feature {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-align: left;
+    }
+
+    .feature-icon {
+        flex: 0 0 46px;
+        margin: 0;
+    }
+
+    .feature p br {
+        display: none;
+    }
+}
+
+/* MÓVIL */
+
+@media (max-width: 760px) {
+    .login-layout {
+        display: block;
+    }
+
+    .login-visual {
+        min-height: auto;
+        padding: 32px 22px 75px;
+        border-radius: 0 0 45px 45px;
+    }
+
+    .login-visual::after {
+        display: none;
+    }
+
+    .visual-content {
+        min-height: auto;
+        width: 100%;
+    }
+
+    .logo-placeholder {
+        width: 130px;
+        min-height: 105px;
+        margin-bottom: 10px;
+        font-size: 0.78rem;
+    }
+
+    .school-number {
+        margin-bottom: 22px;
+    }
+
+    .school-number span {
+        font-size: 1.35rem;
+    }
+
+    .school-number strong {
+        font-size: 3.6rem;
+    }
+
+    .platform-description {
+        margin-bottom: 0;
+        text-align: center;
+    }
+
+    .platform-description h1 {
+        margin-inline: auto;
+        font-size: 1.65rem;
+    }
+
+    .platform-description p,
+    .features,
+    .motivation-card {
+        display: none;
+    }
+
+    .login-section {
+        margin-top: -45px;
+        padding: 0 16px 24px;
+    }
+
+    .login-card {
+        position: relative;
+        z-index: 2;
+        padding: 28px 20px;
+        border-radius: 20px;
+    }
+
+    .role-options {
+        grid-template-columns: 1fr;
+    }
+
+    .role-card {
+        flex-direction: row;
+        min-height: 58px;
+        gap: 10px;
+    }
+
+    .role-icon {
+        margin-bottom: 0;
+    }
+
+    .login-footer {
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        text-align: center;
+    }
+}
+
+@media (max-width: 390px) {
+    .login-card {
+        padding-inline: 16px;
+    }
+
+    .login-header h2 {
+        font-size: 1.55rem;
+    }
+}
