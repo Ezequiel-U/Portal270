@@ -218,6 +218,18 @@ $stmtCal = $pdo->prepare("
 $stmtCal->execute([$id_alumno_db, $id_alumno_db]);
 $tareas_calificadas = $stmtCal->fetchAll();
 
+// Obtener Próximos Eventos Escolares
+$stmtEventosAlumno = $pdo->prepare("
+    SELECT * FROM calendario_eventos 
+    WHERE (id_grupo IS NULL OR id_grupo = ?)
+    AND (fecha_inicio >= CURDATE() OR fecha_fin >= CURDATE())
+    ORDER BY fecha_inicio ASC
+    LIMIT 6
+");
+$stmtEventosAlumno->execute([$id_grupo_db]);
+$proximos_eventos = $stmtEventosAlumno->fetchAll();
+
+
 
 // Compañeros para equipo
 $stmt = $pdo->prepare("SELECT a.id_alumno, u.nombre FROM alumnos a JOIN usuarios u ON a.id_usuario = u.id_usuario WHERE a.id_grupo = ? AND a.id_alumno != ?");
@@ -242,6 +254,10 @@ $num_no_leidas = count($notif_no_leidas);
     <link rel="stylesheet" href="css/styles.css?v=<?= time() ?>">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- FullCalendar -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+
     <style>
         .ql-editor {
             padding: 0;
@@ -251,11 +267,11 @@ $num_no_leidas = count($notif_no_leidas);
         .teammate-list {
             max-height: 200px;
             overflow-y: auto;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 10px;
             margin-top: 10px;
-            background: #fff;
+            background: var(--card-bg);
         }
         .teammate-item {
             display: flex;
@@ -266,14 +282,14 @@ $num_no_leidas = count($notif_no_leidas);
             cursor: pointer;
         }
         .teammate-item:hover {
-            background: #f1f5f9;
+            background: var(--bg-hover);
         }
     </style>
 </head>
 <body>
     <aside class="sidebar">
         <div class="profile-section">
-            <div class="profile-pic" style="background:#fff; margin:0 auto 10px;"></div>
+            <div class="profile-pic" style="background:var(--card-bg); margin:0 auto 10px;"></div>
             <div class="profile-name"><?= htmlspecialchars($_SESSION['nombre']) ?></div>
             <div class="profile-role"><?= htmlspecialchars($info_alumno['semestre']) ?>º <?= htmlspecialchars($info_alumno['grupo']) ?> <?= htmlspecialchars($info_alumno['carrera']) ?></div>
         </div>
@@ -281,7 +297,7 @@ $num_no_leidas = count($notif_no_leidas);
             <li><a href="#" class="nav-item" onclick="switchNav('pendientes', this)"><i data-lucide="home"></i> Inicio</a></li>
             <li><a href="#" class="nav-item active" onclick="switchNav('pendientes', this)"><i data-lucide="book-open"></i> Mis actividades</a></li>
             <li><a href="#" class="nav-item" onclick="switchNav('entregas', this)"><i data-lucide="check-circle"></i> Entregas</a></li>
-            <li><a href="#" class="nav-item" onclick="switchNav('pendientes', this)"><i data-lucide="calendar"></i> Calendario</a></li>
+            <li><a href="#" class="nav-item" onclick="switchNav('calendario', this)"><i data-lucide="calendar"></i> Calendario</a></li>
             <li><a href="#" class="nav-item" onclick="switchNav('calificaciones', this)"><i data-lucide="award"></i> Calificaciones</a></li>
         </ul>
         <div style="margin-top: auto; padding: 20px;">
@@ -305,11 +321,22 @@ $num_no_leidas = count($notif_no_leidas);
                     <div class="notif-header">Notificaciones</div>
                     <div class="notif-list">
                         <?php if(count($notificaciones) == 0): ?>
-                            <div style="padding: 15px; text-align:center; color: #64748b;">No tienes notificaciones</div>
+                            <div style="padding: 15px; text-align:center; color: var(--text-muted);">No tienes notificaciones</div>
                         <?php else: ?>
-                            <?php foreach($notificaciones as $n): ?>
+                            <?php foreach($notificaciones as $n): 
+                                $titulo_lower = strtolower($n['titulo']);
+                                $mensaje_lower = strtolower($n['mensaje']);
+                                $icon = 'mail';
+                                if (strpos($titulo_lower, 'calendario') !== false || strpos($titulo_lower, 'evento') !== false) {
+                                    $icon = 'calendar';
+                                } elseif (strpos($titulo_lower, 'equipo') !== false || strpos($mensaje_lower, 'equipo') !== false) {
+                                    $icon = 'users';
+                                } elseif (strpos($titulo_lower, 'calific') !== false) {
+                                    $icon = 'award';
+                                }
+                            ?>
                                 <div class="notif-item">
-                                    <div class="notif-icon"><i data-lucide="mail"></i></div>
+                                    <div class="notif-icon notif-icon-bw"><i data-lucide="<?= $icon ?>"></i></div>
                                     <div>
                                         <div class="notif-title"><?= htmlspecialchars($n['titulo']) ?></div>
                                         <div style="color: #333;"><?= htmlspecialchars($n['mensaje']) ?></div>
@@ -349,19 +376,19 @@ $num_no_leidas = count($notif_no_leidas);
         <div id="container-pendientes">
             <h2 style="margin-bottom: 20px;">Actividades Pendientes</h2>
             <?php if(count($tareas_pendientes) == 0): ?>
-                <div class="card" style="text-align:center; padding: 40px; color:#64748b;">
+                <div class="stat-card" style="text-align: center; cursor:pointer;" onclick="switchNav('entregas', document.querySelector('.nav-item:nth-child(3)'))">
                     <i data-lucide="check-circle-2" style="width:48px; height:48px; color:#22c55e; margin-bottom:10px;"></i>
                     <p>No tienes tareas pendientes. ¡Excelente trabajo!</p>
                 </div>
             <?php else: ?>
                 <?php foreach($tareas_pendientes as $tarea): ?>
-                    <div class="task-item" onclick="verTarea(<?= htmlspecialchars(json_encode($tarea)) ?>)" style="cursor:pointer; background:#fff;">
+                    <div class="task-item" onclick="verTarea(<?= htmlspecialchars(json_encode($tarea)) ?>)" style="cursor:pointer; background:var(--card-bg);">
                         <div style="display:flex; align-items:center; gap: 15px;">
-                            <div style="background: #eef2ff; color:#2563eb; width:45px; height:45px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                            <div style="background: rgba(79, 70, 229, 0.1); color:#2563eb; width:45px; height:45px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
                                 <i data-lucide="file-text"></i>
                             </div>
                             <div>
-                                <div style="font-weight: 600; font-size: 16px; color:#0f172a;"><?= htmlspecialchars($tarea['titulo']) ?></div>
+                                <div style="font-weight: 600; font-size: 16px; color:var(--text-dark);"><?= htmlspecialchars($tarea['titulo']) ?></div>
                                 <div style="font-size: 13px; color: var(--text-muted); margin-top: 5px; display:flex; align-items:center; gap:15px;">
                                     <span style="display:flex; align-items:center; gap:5px;"><i data-lucide="book" style="width:14px;"></i> <?= htmlspecialchars($tarea['materia']) ?></span>
                                     <span style="display:flex; align-items:center; gap:5px;"><i data-lucide="calendar" style="width:14px;"></i> <?= htmlspecialchars($tarea['fecha_limite']) ?></span>
@@ -385,19 +412,19 @@ $num_no_leidas = count($notif_no_leidas);
         <div id="container-entregas" style="display:none;">
             <h2 style="margin-bottom: 20px;">Tareas Entregadas</h2>
             <?php if(count($tareas_entregadas) == 0): ?>
-                <div class="card" style="text-align:center; padding: 40px; color:#64748b;">
+                <div class="stat-card" style="text-align: center; cursor:pointer;" onclick="switchNav('pendientes', document.querySelector('.nav-item:nth-child(2)'))">
                     <i data-lucide="inbox" style="width:48px; height:48px; color:#94a3b8; margin-bottom:10px;"></i>
                     <p>Aún no has entregado ninguna tarea.</p>
                 </div>
             <?php else: ?>
                 <?php foreach($tareas_entregadas as $tarea): ?>
-                    <div class="task-item" style="background:#f8fafc; border: 1px solid #e2e8f0;">
+                    <div class="task-item" style="background:var(--bg-hover); border: 1px solid var(--border-color);">
                         <div style="display:flex; align-items:center; gap: 15px;">
-                            <div style="background: #e2e8f0; color:#64748b; width:45px; height:45px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                            <div style="background: #e2e8f0; color:var(--text-muted); width:45px; height:45px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
                                 <i data-lucide="check-circle"></i>
                             </div>
                             <div>
-                                <div style="font-weight: 600; font-size: 16px; color:#0f172a;"><?= htmlspecialchars($tarea['titulo']) ?></div>
+                                <div style="font-weight: 600; font-size: 16px; color:var(--text-dark);"><?= htmlspecialchars($tarea['titulo']) ?></div>
                                 <div style="font-size: 13px; color: var(--text-muted); margin-top: 5px; display:flex; align-items:center; gap:15px;">
                                     <span style="display:flex; align-items:center; gap:5px;"><i data-lucide="book" style="width:14px;"></i> <?= htmlspecialchars($tarea['materia']) ?></span>
                                     <span style="display:flex; align-items:center; gap:5px; color:#10b981;"><i data-lucide="clock" style="width:14px;"></i> Entregado el: <?= htmlspecialchars($tarea['fecha_entrega']) ?></span>
@@ -410,7 +437,7 @@ $num_no_leidas = count($notif_no_leidas);
                             <form method="POST" style="margin:0;" onsubmit="return confirm('¿Estás seguro de anular el envío? Si enviaste en equipo, se anulará para todos.');">
                                 <input type="hidden" name="action" value="anular_entrega">
                                 <input type="hidden" name="id_actividad_anular" value="<?= $tarea['id_actividad'] ?>">
-                                <button type="submit" class="btn" style="font-size:12px; padding:6px 12px; background:#fee2e2; color:#ef4444; border:1px solid #f87171;"><i data-lucide="x-circle" style="width:14px;"></i> Anular envío</button>
+                                <button type="submit" class="btn" style="font-size:12px; padding:6px 12px; background:rgba(239, 68, 68, 0.15); color:#ef4444; border:1px solid #f87171;"><i data-lucide="x-circle" style="width:14px;"></i> Anular envío</button>
                             </form>
                         </div>
                         <?php else: ?>
@@ -425,7 +452,7 @@ $num_no_leidas = count($notif_no_leidas);
         <div id="container-calificaciones" style="display:none;">
             <h2 style="margin-bottom: 20px;">Calificaciones</h2>
             <?php if(count($tareas_calificadas) == 0): ?>
-                <div class="card" style="text-align:center; padding: 40px; color:#64748b;">
+                <div class="stat-card" style="text-align: center; cursor:pointer;" onclick="switchNav('pendientes', document.querySelector('.nav-item:nth-child(2)'))">
                     <i data-lucide="award" style="width:48px; height:48px; color:#94a3b8; margin-bottom:10px;"></i>
                     <p>Aún no tienes tareas calificadas.</p>
                 </div>
@@ -434,18 +461,18 @@ $num_no_leidas = count($notif_no_leidas);
                     <div class="card" style="margin-bottom: 15px; border-left: 4px solid #8b5cf6;">
                         <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                             <div>
-                                <div style="font-weight: 600; font-size: 18px; color:#0f172a; margin-bottom:5px;"><?= htmlspecialchars($tarea['titulo']) ?></div>
+                                <div style="font-weight: 600; font-size: 18px; color:var(--text-dark); margin-bottom:5px;"><?= htmlspecialchars($tarea['titulo']) ?></div>
                                 <div style="font-size: 13px; color: var(--text-muted); display:flex; align-items:center; gap:15px; margin-bottom: 15px;">
                                     <span style="display:flex; align-items:center; gap:5px;"><i data-lucide="book" style="width:14px;"></i> <?= htmlspecialchars($tarea['materia']) ?></span>
                                 </div>
                                 
-                                <div style="background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0;">
-                                    <div style="font-size:12px; font-weight:600; color:#64748b; margin-bottom:5px; text-transform:uppercase;">Comentarios del Docente:</div>
-                                    <div style="color:#334155; font-size:14px;"><?= nl2br(htmlspecialchars($tarea['retroalimentacion'] ?? 'Buen trabajo.')) ?></div>
+                                <div style="background:var(--bg-hover); padding:15px; border-radius:8px; border:1px solid var(--border-color);">
+                                    <div style="font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:5px; text-transform:uppercase;">Comentarios del Docente:</div>
+                                    <div style="color:var(--text-dark); font-size:14px;"><?= nl2br(htmlspecialchars($tarea['retroalimentacion'] ?? 'Buen trabajo.')) ?></div>
                                 </div>
                             </div>
                             <div style="text-align:right;">
-                                <div style="font-size:12px; color:#64748b; margin-bottom:5px;">Calificación</div>
+                                <div style="font-size:12px; color:var(--text-muted); margin-bottom:5px;">Calificación</div>
                                 <div style="font-size:28px; font-weight:700; color:#8b5cf6;"><?= htmlspecialchars($tarea['puntos_obtenidos']) ?></div>
                             </div>
                         </div>
@@ -454,13 +481,51 @@ $num_no_leidas = count($notif_no_leidas);
             <?php endif; ?>
         </div>
 
+        <!-- CONTENEDOR CALENDARIO -->
+        <div id="container-calendario" style="display:none;">
+            
+            <h2 style="margin-bottom: 20px; display:flex; align-items:center; gap:10px;"><i data-lucide="calendar-days" style=""></i> Próximos Eventos</h2>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px;">
+                <?php foreach($proximos_eventos as $ev): ?>
+                    <div class="card" style="border-left: 4px solid <?= $ev['color'] ? htmlspecialchars($ev['color']) : '#3b82f6' ?>; cursor:pointer; display: flex; justify-content: space-between; align-items: center; padding: 12px 20px;" onclick="document.getElementById('modalVerEvento').style.display='flex'; document.getElementById('ver-titulo').innerText='<?= htmlspecialchars(addslashes($ev['titulo'])) ?>'; document.getElementById('ver-fechas').innerText='<?= date('d/m/Y h:i A', strtotime($ev['fecha_inicio'])) ?>'; document.getElementById('ver-descripcion').innerHTML='<?= htmlspecialchars(addslashes($ev['descripcion'] ?? 'Sin descripción')) ?>';">
+                        <div style="flex: 1;">
+                            <h4 style="margin-bottom: 2px; font-size: 16px; color: var(--text-dark);"><?= htmlspecialchars($ev['titulo']) ?></h4>
+                            <div style="font-size: 13px; color: var(--text-muted); display:flex; align-items:center; gap:5px;">
+                                <i data-lucide="calendar" style="width:14px;"></i> <?= date('d M Y, h:i A', strtotime($ev['fecha_inicio'])) ?>
+                            </div>
+                        </div>
+                        <?php 
+                            $uText = ''; $uColor = ''; $uIcon = '';
+                            if(($ev['urgencia'] ?? 'media') === 'alta') { $uText = 'Urgencia Alta'; $uColor = '#ef4444'; $uIcon = 'alert-triangle'; }
+                            elseif(($ev['urgencia'] ?? 'media') === 'baja') { $uText = 'Urgencia Baja'; $uColor = '#10b981'; $uIcon = 'info'; }
+                            else { $uText = 'Urgencia Media'; $uColor = '#f59e0b'; $uIcon = 'alert-circle'; }
+                        ?>
+                        <div style="font-size: 13px; color: <?= $uColor ?>; font-weight:600; display:flex; align-items:center; gap:5px; background: <?= $uColor ?>15; padding: 4px 10px; border-radius: 20px;">
+                            <i data-lucide="<?= $uIcon ?>" style="width:14px;"></i> <?= $uText ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+                <?php if(count($proximos_eventos) == 0): ?>
+                    <div class="card" style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px;">
+                        <i data-lucide="calendar-check" style="width:48px; height:48px; margin-bottom:10px;"></i>
+                        <p>No hay eventos escolares próximos programados.</p>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <div style="background:var(--card-bg); padding:20px; border-radius:12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); max-width: 900px; margin: 0 auto; border: 1px solid var(--border-color);">
+                <div id='calendar' style="min-height: 400px; font-size: 14px;"></div>
+            </div>
+        </div>
+
         <div id="detalles-tarea" style="display: none;">
             <div class="card" style="max-width: 900px; margin: 0 auto;">
                 <div class="task-header" style="border-bottom: 1px solid #e2e8f0; padding-bottom:20px; margin-bottom:0;">
                     <div class="icon-box"><i data-lucide="book-open"></i></div>
                     <div>
                         <div class="task-title" id="t-titulo">Título</div>
-                        <div style="font-size: 13px; color: #64748b; margin-top:5px;" id="t-meta">Materia</div>
+                        <div style="font-size: 13px; color: var(--text-muted); margin-top:5px;" id="t-meta">Materia</div>
                     </div>
                 </div>
                 
@@ -471,7 +536,7 @@ $num_no_leidas = count($notif_no_leidas);
 
                 <!-- Tab: Instrucciones -->
                 <div id="content-instrucciones">
-                    <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
+                    <div style="background: var(--bg-hover); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
                         <div class="ql-editor" id="t-desc"></div>
                     </div>
                     
@@ -491,7 +556,7 @@ $num_no_leidas = count($notif_no_leidas);
                         <form method="POST" enctype="multipart/form-data">
                             <input type="hidden" name="id_actividad" id="tarea-id" value="">
                         
-                        <div id="msg-bloqueado" style="display:none; background:#fee2e2; color:#ef4444; padding:20px; border-radius:8px; border:1px solid #f87171; text-align:center; margin-bottom:20px;">
+                        <div id="msg-bloqueado" style="display:none; background:rgba(239, 68, 68, 0.15); color:#ef4444; padding:20px; border-radius:8px; border:1px solid #f87171; text-align:center; margin-bottom:20px;">
                             <div style="display:flex; justify-content:center; margin-bottom:10px;"><i data-lucide="lock" style="width:32px; height:32px;"></i></div>
                             <h4 style="margin-bottom:5px; font-size:16px;">Entregas Cerradas</h4>
                             <p style="font-size:14px;">El periodo de entrega para esta actividad ha finalizado y el docente no acepta entregas tardías.</p>
@@ -499,7 +564,7 @@ $num_no_leidas = count($notif_no_leidas);
 
                         <div id="form-subida">
                         <div class="form-group">
-                            <label style="font-weight:600; font-size:15px; margin-bottom:15px;">1. Sube tu archivo</label>
+                            <label style="font-weight:600; font-size:15px; margin-bottom:15px;"><i data-lucide="upload" style="color:#2563eb; width:20px; height:20px; margin-bottom:-4px;"></i> 1. Sube tu archivo</label>
                             
                             <div class="upload-area" id="dropZoneContainer" onclick="document.getElementById('fileInput').click()">
                                 <div style="display:flex; justify-content:center; margin-bottom: 10px;"><i data-lucide="cloud-upload" style="width:40px; height:40px; color:var(--primary-color);"></i></div>
@@ -509,34 +574,32 @@ $num_no_leidas = count($notif_no_leidas);
                                 <div style="font-size: 11px; color: #94a3b8; margin-top: 15px;">Formatos permitidos: PDF, DOCX, ZIP | Máximo: 50MB</div>
                             </div>
 
-                            <div id="filePreviewContainer" style="display:none; align-items:center; justify-content:space-between; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 8px; padding: 12px 15px;">
+                            <div id="filePreviewContainer" style="display:none; align-items:center; justify-content:space-between; background: rgba(79, 70, 229, 0.1); border: 1px solid #c7d2fe; border-radius: 8px; padding: 12px 15px;">
                                 <div style="display:flex; align-items:center; gap: 10px;">
                                     <i data-lucide="file-check-2" style="color:#2563eb; width:20px; height:20px;"></i>
-                                    <span id="fileNameDisplay" style="font-weight: 600; color: #1e293b; font-size: 14px;"></span>
+                                    <span id="fileNameDisplay" style="font-weight: 600; color: var(--text-dark); font-size: 14px;"></span>
                                 </div>
-                                <button type="button" onclick="removeFile(event)" style="background:transparent; border:none; color:#ef4444; cursor:pointer; display:flex; align-items:center; gap:5px; font-size:13px; font-weight:600; padding:5px; border-radius:4px;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='transparent'">
+                                <button type="button" onclick="removeFile(event)" style="background:transparent; border:none; outline:none; color:#ef4444; cursor:pointer; display:flex; align-items:center; gap:5px; font-size:13px; font-weight:600; padding:5px; border-radius:4px;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='transparent'">
                                     <i data-lucide="trash-2" style="width:16px; height:16px;"></i> Eliminar
                                 </button>
                             </div>
                         </div>
                         
-                        <div id="seccion-equipo" class="form-group" style="display:none; background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0;">
-                            <label style="font-weight:600; font-size:15px; color:#1e293b; display:flex; align-items:center; gap:8px;">
+                        <div id="seccion-equipo" class="form-group" style="display:none; background:var(--bg-hover); padding:15px; border-radius:8px; border:1px solid var(--border-color);">
+                            <label style="font-weight:600; font-size:15px; color:var(--text-dark); display:flex; align-items:center; gap:8px;">
                                 <i data-lucide="users" style="color:#8b5cf6;"></i> Selecciona a tu equipo
                             </label>
-                            <p style="font-size:12px; color:#64748b; margin-bottom:10px;">Al marcar a tus compañeros, esta tarea se enviará para todos ellos automáticamente.</p>
+                            <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">Al marcar a tus compañeros, esta tarea se enviará para todos ellos automáticamente.</p>
                             <div class="teammate-list">
                                 <?php foreach($companeros as $comp): ?>
                                 <label class="teammate-item">
                                     <input type="checkbox" name="teammates[]" value="<?= $comp['id_alumno'] ?>">
-                                    <span style="font-size:14px; font-weight:500; color:#334155;"><?= htmlspecialchars($comp['nombre']) ?></span>
+                                    <span style="font-size:14px; font-weight:500; color:var(--text-dark);"><?= htmlspecialchars($comp['nombre']) ?></span>
                                 </label>
                                 <?php endforeach; ?>
                             </div>
                         </div>
 
-                        <div class="form-group" style="margin-top:20px;">
-                            <label style="font-weight:600; font-size:15px;">2. Añade un comentario (opcional)</label>
                             <textarea name="comentario" class="form-control" rows="3" placeholder="Escribe un comentario para tu docente..."></textarea>
                         </div>
 
@@ -559,19 +622,19 @@ $num_no_leidas = count($notif_no_leidas);
                                 <i data-lucide="users" style="width:48px; height:48px; color:#8b5cf6;"></i>
                             </div>
                         </div>
-                        <h3 style="margin-bottom:10px; font-size:22px; color:#1e293b;">¡Tienes una invitación de equipo!</h3>
-                        <p style="color:#64748b; margin-bottom:20px; font-size:15px;" id="inv-comentario"></p>
+                        <h3 style="margin-bottom:10px; font-size:22px; color:var(--text-dark);">¡Tienes una invitación de equipo!</h3>
+                        <p style="color:var(--text-muted); margin-bottom:20px; font-size:15px;" id="inv-comentario"></p>
                         
-                        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px; margin-bottom:30px; display:inline-flex; align-items:center; gap:15px; max-width:100%;">
+                        <div style="background:var(--bg-hover); border:1px solid var(--border-color); border-radius:12px; padding:20px; margin-bottom:30px; display:inline-flex; align-items:center; gap:15px; max-width:100%;">
                             <i data-lucide="file-check-2" style="color:#2563eb; width:24px; height:24px;"></i>
-                            <span id="inv-archivo" style="font-weight:600; color:#334155; font-size:16px;"></span>
+                            <span id="inv-archivo" style="font-weight:600; color:var(--text-dark); font-size:16px;"></span>
                         </div>
                         
                         <div style="display:flex; justify-content:center; gap:20px;">
                             <form method="POST" style="margin:0;">
                                 <input type="hidden" name="action" value="rechazar_equipo">
                                 <input type="hidden" name="id_actividad" class="tarea-id-conf">
-                                <button type="submit" class="btn" style="background:#fee2e2; color:#ef4444; border:1px solid #f87171; padding: 12px 24px; font-size:15px;"><i data-lucide="x" style="width:18px;"></i> Rechazar</button>
+                                <button type="submit" class="btn" style="background:rgba(239, 68, 68, 0.15); color:#ef4444; border:1px solid #f87171; padding: 12px 24px; font-size:15px;"><i data-lucide="x" style="width:18px;"></i> Rechazar</button>
                             </form>
                             <form method="POST" style="margin:0;">
                                 <input type="hidden" name="action" value="aceptar_equipo">
@@ -583,7 +646,6 @@ $num_no_leidas = count($notif_no_leidas);
                 </div>
             </div>
         </div>
-
     </main>
 
     <script>
@@ -595,21 +657,36 @@ $num_no_leidas = count($notif_no_leidas);
             if(element) element.classList.add('active');
 
             // Hide all views
-            document.getElementById('container-pendientes').style.display = 'none';
-            document.getElementById('container-entregas').style.display = 'none';
-            document.getElementById('container-calificaciones').style.display = 'none';
-            document.getElementById('detalles-tarea').style.display = 'none';
+            const containerPendientes = document.getElementById('container-pendientes');
+            if (containerPendientes) containerPendientes.style.display = 'none';
+            const containerCalificaciones = document.getElementById('container-calificaciones');
+            if (containerCalificaciones) containerCalificaciones.style.display = 'none';
+            const containerCalendario = document.getElementById('container-calendario');
+            if (containerCalendario) containerCalendario.style.display = 'none';
+            const detallesTarea = document.getElementById('detalles-tarea');
+            if (detallesTarea) detallesTarea.style.display = 'none';
 
             // Show selected view
-            document.getElementById('container-' + view).style.display = 'block';
+            if (view === 'entregas') {
+                if (containerPendientes) containerPendientes.style.display = 'block';
+                switchTaskTab('completado', document.getElementById('btn-tab-completado') || document.querySelector('.task-tab:nth-child(3)'));
+            } else {
+                const selectedContainer = document.getElementById('container-' + view);
+                if (selectedContainer) selectedContainer.style.display = 'block';
+            }
 
             // Update Breadcrumb
             const titles = {
                 'pendientes': 'Pendientes',
                 'entregas': 'Historial de Entregas',
-                'calificaciones': 'Calificaciones Obtenidas'
+                'calificaciones': 'Calificaciones Obtenidas',
+                'calendario': 'Calendario Escolar'
             };
             document.getElementById('breadcrumb-current').innerText = titles[view];
+            
+            if (view === 'calendario' && calendar) {
+                calendar.render();
+            }
         }
 
         function switchTab(tab) {
@@ -621,6 +698,21 @@ $num_no_leidas = count($notif_no_leidas);
             
             document.getElementById('tab-' + tab).classList.add('active');
             document.getElementById('content-' + tab).style.display = 'block';
+        }
+
+                function switchTaskTab(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            document.getElementById('tab-' + tabId).style.display = 'block';
+            
+            document.querySelectorAll('.task-tab').forEach(el => {
+                el.classList.remove('active');
+                el.style.color = 'var(--text-muted)';
+                el.style.borderBottomColor = 'transparent';
+            });
+            
+            btn.classList.add('active');
+            btn.style.color = 'var(--primary-color)';
+            btn.style.borderBottomColor = 'var(--primary-color)';
         }
 
         function verTarea(tareaData) {
@@ -665,9 +757,9 @@ $num_no_leidas = count($notif_no_leidas);
                         recursosContainer.style.display = 'block';
                         archivos.forEach(archivo => {
                             recursosList.innerHTML += `
-                                <div style="display:flex; align-items:center; justify-content:space-between; background:#fff; border:1px solid #e2e8f0; padding:10px 15px; border-radius:8px;">
+                                <div style="display:flex; align-items:center; justify-content:space-between; background:var(--card-bg); border:1px solid var(--border-color); padding:10px 15px; border-radius:8px;">
                                     <div style="display:flex; align-items:center; gap:10px;">
-                                        <i data-lucide="file" style="color:#64748b; width:18px;"></i>
+                                        <i data-lucide="file" style="color:var(--text-muted); width:18px;"></i>
                                         <span style="font-size:14px; font-weight:500;">${archivo}</span>
                                     </div>
                                     <a href="uploads/recursos/${archivo}" target="_blank" class="btn btn-outline" style="padding:6px 12px; font-size:12px; display:flex; align-items:center; gap:5px;">
@@ -684,9 +776,9 @@ $num_no_leidas = count($notif_no_leidas);
                     // Fallback for single old file format
                     recursosContainer.style.display = 'block';
                     recursosList.innerHTML = `
-                        <div style="display:flex; align-items:center; justify-content:space-between; background:#fff; border:1px solid #e2e8f0; padding:10px 15px; border-radius:8px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; background:var(--card-bg); border:1px solid var(--border-color); padding:10px 15px; border-radius:8px;">
                             <div style="display:flex; align-items:center; gap:10px;">
-                                <i data-lucide="file" style="color:#64748b; width:18px;"></i>
+                                <i data-lucide="file" style="width:18px;"></i>
                                 <span style="font-size:14px; font-weight:500;">${tareaData.archivo_recurso}</span>
                             </div>
                             <a href="uploads/recursos/${tareaData.archivo_recurso}" target="_blank" class="btn btn-outline" style="padding:6px 12px; font-size:12px; display:flex; align-items:center; gap:5px;">
@@ -766,7 +858,170 @@ $num_no_leidas = count($notif_no_leidas);
             if (!e.target.closest('.notification-container')) {
                 document.querySelectorAll(".notification-dropdown").forEach(el => el.classList.remove('show'));
             }
+            if (e.target.id === 'modalVerEvento') {
+                document.getElementById('modalVerEvento').style.display = 'none';
+            }
         }
+        
+        var calendar;
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'es',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                buttonText: { today: 'Hoy', month: 'Mes', week: 'Semana', day: 'Día' },
+                events: 'api_calendario.php',
+                eventContent: function(arg) {
+                    let iconHtml = '';
+                    if(arg.event.extendedProps.tipo === 'tarea') {
+                        iconHtml = '<i data-lucide="book-open" style="width:14px; height:14px; margin-right:4px; margin-left:2px; vertical-align:middle;"></i>';
+                    } else {
+                        iconHtml = '<i data-lucide="calendar" style="width:14px; height:14px; margin-right:4px; margin-left:2px; vertical-align:middle;"></i>';
+                    }
+                    
+                    setTimeout(() => lucide.createIcons(), 10);
+                    return { 
+                        html: `<div style="display:flex; align-items:center; overflow:hidden; white-space:nowrap; padding:2px; color:#fff; height: 22px; box-sizing: border-box;">
+                                ${iconHtml} <span style="text-overflow:ellipsis; overflow:hidden; font-weight:500; font-size:12.5px;">${arg.event.title}</span>
+                               </div>`
+                    };
+                },
+                eventClick: function(info) {
+                    info.jsEvent.preventDefault();
+                    var props = info.event.extendedProps;
+                    
+                    if (props.tipo === 'tarea') {
+                        // Navegar a pendientes
+                        switchNav('pendientes', document.querySelector('.nav-item[onclick*="pendientes"]'));
+                        
+                        // Fake data for verTarea
+                        let tareaData = {
+                            id_actividad: info.event.id.replace('tarea_', ''),
+                            titulo: info.event.title.replace('📝 ', ''),
+                            materia: 'Ver en tus pendientes', 
+                            fecha_limite: info.event.startStr,
+                            estatus: props.estatus || 'no_visto',
+                            archivo_invitacion: '',
+                            comentario_invitacion: ''
+                        };
+                        verTarea(tareaData);
+                        
+                        // Set the description
+                        document.getElementById('t-desc').innerHTML = props.descripcion || 'Sin descripción adicional.';
+                        return; // Detener aquí para no abrir el modal general
+                    }
+                    
+                    document.getElementById('ver-titulo').innerText = info.event.title;
+                    let fInicio = info.event.start ? info.event.start.toLocaleString() : '';
+                    let fFin = info.event.end ? ' - ' + info.event.end.toLocaleString() : '';
+                    document.getElementById('ver-fechas').innerText = fInicio + fFin;
+                    
+                    let uText = ''; let uColor = ''; let uIcon = '';
+                    if(props.urgencia === 'alta') { uText = 'Urgencia Alta'; uColor = '#ef4444'; uIcon = 'alert-triangle'; }
+                    else if(props.urgencia === 'baja') { uText = 'Urgencia Baja'; uColor = '#10b981'; uIcon = 'info'; }
+                    else { uText = 'Urgencia Media'; uColor = '#f59e0b'; uIcon = 'alert-circle'; }
+                    document.getElementById('ver-urgencia').innerHTML = `<span style="color:${uColor}; display:flex; align-items:center; gap:5px;"><i data-lucide="${uIcon}" style="width:16px;"></i> ${uText}</span>`;
+                    lucide.createIcons();
+                    
+                    document.getElementById('ver-descripcion').innerHTML = props.descripcion || 'Sin descripción adicional.';
+                    
+                    document.getElementById('modalVerEvento').style.display = 'flex';
+                }
+            });
+        });
     </script>
+    
+    <!-- Modal Ver Evento Alumno -->
+    <div id="modalVerEvento" class="modal" style="display:none; align-items:center; justify-content:center;">
+        <div class="modal-content" style="max-width: 500px; width: 90%; padding: 0; border-radius: 16px; overflow: hidden; border: none; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); animation: modalFadeIn 0.3s ease;">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #1e293b, #0f172a); padding: 25px; color: white;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div style="flex: 1; padding-right: 15px;">
+                        <h3 style="margin: 0; font-size: 20px; font-weight: 700; display:flex; align-items:center; gap:10px; line-height: 1.3;">
+                            <i data-lucide="calendar-check" style="width:22px; height:22px; color:#60a5fa; flex-shrink:0;"></i> 
+                            <span id="ver-titulo">Título del Evento</span>
+                        </h3>
+                        <div style="font-size: 13.5px; color: #94a3b8; margin-top: 10px; display:flex; align-items:center; gap:6px;">
+                            <i data-lucide="clock" style="width:14px; height:14px;"></i> 
+                            <span id="ver-fechas">...</span>
+                        </div>
+                    </div>
+                    <button onclick="document.getElementById('modalVerEvento').style.display='none'" style="background: rgba(255,255,255,0.1); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display:flex; justify-content:center; align-items:center; transition: all 0.2s; flex-shrink:0;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                        <i data-lucide="x" style="width:16px;"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Body -->
+            <div style="padding: 25px; background: var(--bg-card, #fff);">
+                <div style="margin-bottom: 5px;">
+                    <h4 style="font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; margin-bottom: 12px; display:flex; align-items:center; gap:6px;">
+                        <i data-lucide="info" style="width:14px; height:14px;"></i> Información Adicional
+                    </h4>
+                    <div id="ver-descripcion" style="font-size: 14.5px; color: var(--text-color, #334155); line-height: 1.6; background: var(--bg-hover, #f8fafc); padding: 16px; border-radius: 10px; border: 1px solid var(--border-color, #e2e8f0);">
+                        <!-- descripción -->
+                    </div>
+                </div>
+                
+                <div style="display: flex; justify-content: flex-end; margin-top: 25px;">
+                    <button type="button" class="btn btn-primary" onclick="document.getElementById('modalVerEvento').style.display='none'" style="padding: 10px 24px; border-radius: 8px; font-weight: 600; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);">Entendido</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute("data-theme") || "dark";
+            const newTheme = currentTheme === "dark" ? "light" : "dark";
+            document.documentElement.setAttribute("data-theme", newTheme);
+            
+            let oldIcon = document.getElementById("theme-icon");
+            if(oldIcon) {
+                let newIcon = document.createElement("i");
+                newIcon.id = "theme-icon";
+                newIcon.setAttribute("data-lucide", newTheme === "light" ? "moon" : "sun");
+                oldIcon.parentNode.replaceChild(newIcon, oldIcon);
+            }
+            
+            const text = document.getElementById("theme-text");
+            if (newTheme === "light") {
+                if(text) text.innerText = "Modo Oscuro";
+            } else {
+                if(text) text.innerText = "Modo Claro";
+            }
+            if(window.lucide) lucide.createIcons();
+            
+            localStorage.setItem("theme", newTheme);
+        }
+        
+        document.addEventListener("DOMContentLoaded", () => {
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme) {
+                document.documentElement.setAttribute("data-theme", savedTheme);
+                let oldIcon = document.getElementById("theme-icon");
+                if(oldIcon) {
+                    let newIcon = document.createElement("i");
+                    newIcon.id = "theme-icon";
+                    newIcon.setAttribute("data-lucide", savedTheme === "light" ? "moon" : "sun");
+                    oldIcon.parentNode.replaceChild(newIcon, oldIcon);
+                }
+                const text = document.getElementById("theme-text");
+                if (savedTheme === "light") {
+                    if(text) text.innerText = "Modo Oscuro";
+                } else {
+                    if(text) text.innerText = "Modo Claro";
+                }
+                if(window.lucide) lucide.createIcons();
+            }
+        });
+    </script>
+
 </body>
 </html>

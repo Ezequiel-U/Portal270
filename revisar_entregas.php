@@ -83,6 +83,7 @@ $num_no_leidas = count($notif_no_leidas);
     <title>Docente - Revisar Entregas</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         function mostrarPanelCalificacion(id_entrega) {
             // Ocultar todos los paneles
@@ -130,10 +131,10 @@ $num_no_leidas = count($notif_no_leidas);
             <div class="profile-role">Docente | CBTis 270</div>
         </div>
         <ul class="nav-links">
-            <li><a href="#" class="nav-item">Inicio</a></li>
             <li><a href="docente.php" class="nav-item">Asignar Tareas</a></li>
             <li><a href="gestionar_tareas.php" class="nav-item">Administrar Tareas</a></li>
             <li><a href="revisar_entregas.php" class="nav-item active">Revisar Entregas</a></li>
+            <li><a href="calendario_docente.php" class="nav-item">Calendario</a></li>
         </ul>
         <div style="margin-top: auto; padding: 20px;">
             <a href="index.php" class="nav-item">Cerrar sesión</a>
@@ -148,7 +149,7 @@ $num_no_leidas = count($notif_no_leidas);
             
             <div class="notification-container" onclick="toggleNotificaciones()">
                 <div class="notification-bell">
-                    🔔
+                    <i data-lucide="bell"></i>
                     <?php if($num_no_leidas > 0): ?>
                         <span class="notification-badge" id="notif-badge"><?= $num_no_leidas ?></span>
                     <?php endif; ?>
@@ -161,7 +162,7 @@ $num_no_leidas = count($notif_no_leidas);
                         <?php else: ?>
                             <?php foreach($notificaciones as $n): ?>
                                 <div class="notif-item">
-                                    <div class="notif-icon">📩</div>
+                                    <div class="notif-icon"><i data-lucide="mail"></i></div>
                                     <div>
                                         <div class="notif-title"><?= htmlspecialchars($n['titulo']) ?></div>
                                         <div style="color: #333;"><?= htmlspecialchars($n['mensaje']) ?></div>
@@ -255,5 +256,8 @@ $num_no_leidas = count($notif_no_leidas);
         </div>
 
     </main>
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
 </html>

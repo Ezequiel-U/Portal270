@@ -143,10 +143,10 @@ $num_no_leidas = count($notif_no_leidas);
             <div class="profile-role">Docente | CBTis 270</div>
         </div>
         <ul class="nav-links">
-            <li><a href="#" class="nav-item">Inicio</a></li>
             <li><a href="docente.php" class="nav-item">Asignar Tareas</a></li>
             <li><a href="gestionar_tareas.php" class="nav-item active">Administrar Tareas</a></li>
             <li><a href="revisar_entregas.php" class="nav-item">Revisar Entregas</a></li>
+            <li><a href="calendario_docente.php" class="nav-item">Calendario</a></li>
         </ul>
         <div style="margin-top: auto; padding: 20px;">
             <a href="index.php" class="nav-item">Cerrar sesión</a>
@@ -164,6 +164,25 @@ $num_no_leidas = count($notif_no_leidas);
                     <?php if($num_no_leidas > 0): ?>
                         <span class="notification-badge" id="notif-badge"><?= $num_no_leidas ?></span>
                     <?php endif; ?>
+                </div>
+                <div class="notification-dropdown" id="notif-dropdown">
+                    <div class="notif-header">Notificaciones</div>
+                    <div class="notif-list">
+                        <?php if(count($notificaciones) == 0): ?>
+                            <div style="padding: 15px; text-align:center; color: #64748b;">No tienes notificaciones</div>
+                        <?php else: ?>
+                            <?php foreach($notificaciones as $n): ?>
+                                <div class="notif-item">
+                                    <div class="notif-icon"><i data-lucide="mail"></i></div>
+                                    <div>
+                                        <div class="notif-title"><?= htmlspecialchars($n['titulo']) ?></div>
+                                        <div style="color: #333;"><?= htmlspecialchars($n['mensaje']) ?></div>
+                                        <div class="notif-time"><?= htmlspecialchars($n['fecha']) ?></div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
         </div>
@@ -305,6 +324,37 @@ $num_no_leidas = count($notif_no_leidas);
         function cerrarModal() {
             document.getElementById('modalEditar').style.display = 'none';
         }
+        
+        function toggleNotificaciones() {
+            var dropdown = document.getElementById('notif-dropdown');
+            dropdown.classList.toggle('show');
+            
+            // Si se abre el menú y hay notificaciones no leídas, marcarlas como leídas
+            var badge = document.getElementById('notif-badge');
+            if (dropdown.classList.contains('show') && badge) {
+                fetch('api_notificaciones.php', { method: 'POST' })
+                .then(response => {
+                    if(response.ok) {
+                        badge.style.display = 'none'; // Ocultar el globito rojo
+                    }
+                });
+            }
+        }
+
+        // Cerrar dropdown al hacer clic fuera
+        window.onclick = function(event) {
+            if (!event.target.closest('.notification-container')) {
+                var dropdowns = document.getElementsByClassName("notification-dropdown");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+        
+        lucide.createIcons();
     </script>
 </body>
 </html>

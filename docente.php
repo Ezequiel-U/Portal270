@@ -98,7 +98,7 @@ $num_no_leidas = count($notif_no_leidas);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asignar Actividad - Docente</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/styles.css?v=<?= time() ?>">
     
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -116,7 +116,7 @@ $num_no_leidas = count($notif_no_leidas);
         }
         
         .section-title {
-            font-size: 16px; font-weight: 700; color: #1e293b;
+            font-size: 16px; font-weight: 700; color: var(--text-dark);
             margin: 25px 0 15px 0;
         }
 
@@ -129,11 +129,11 @@ $num_no_leidas = count($notif_no_leidas);
             cursor: pointer; transition: all 0.2s; position: relative;
         }
         .radio-card:hover { border-color: #cbd5e1; }
-        .radio-card.active { border-color: #2563eb; background-color: #eff6ff; }
+        .radio-card.active { border-color: #2563eb; background-color: var(--bg-hover); }
         .radio-card input[type="radio"] { display: none; }
         .radio-card .icon { font-size: 24px; color: #2563eb; margin-bottom: 10px; }
-        .radio-card .title { font-weight: 600; font-size: 14px; color: #1e293b; margin-bottom: 5px; }
-        .radio-card .desc { font-size: 12px; color: #64748b; line-height: 1.4; }
+        .radio-card .title { font-weight: 600; font-size: 14px; color: var(--text-dark); margin-bottom: 5px; }
+        .radio-card .desc { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
         .radio-card.active::after {
             content: '✓'; position: absolute; top: 15px; right: 15px;
             background: #2563eb; color: #fff; width: 20px; height: 20px;
@@ -143,7 +143,7 @@ $num_no_leidas = count($notif_no_leidas);
 
         /* Info Alert */
         .info-alert {
-            background-color: #eff6ff; color: #1d4ed8; padding: 12px 15px;
+            background-color: var(--bg-hover); color: var(--primary-color); padding: 12px 15px;
             border-radius: 8px; font-size: 13px; display: flex; gap: 10px; align-items: center;
             margin-top: 15px;
         }
@@ -151,19 +151,19 @@ $num_no_leidas = count($notif_no_leidas);
         /* Drag and Drop Zone */
         .drop-zone {
             border: 2px dashed #94a3b8; border-radius: 8px; padding: 30px;
-            text-align: center; background: #f8fafc; cursor: pointer;
+            text-align: center; background: var(--bg-hover); cursor: pointer;
             transition: background 0.2s;
         }
-        .drop-zone:hover, .drop-zone.dragover { background: #f1f5f9; border-color: #2563eb; }
+        .drop-zone:hover, .drop-zone.dragover { background: var(--bg-hover); border-color: #2563eb; }
         .drop-zone .icon { font-size: 30px; color: #2563eb; margin-bottom: 10px; }
 
         /* Right Panel Cards */
         .side-card {
-            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
+            background: var(--bg-hover); border: 1px solid var(--border-color); border-radius: 12px;
             padding: 20px; margin-bottom: 20px;
         }
         .side-card h3 {
-            font-size: 14px; font-weight: 700; color: #1d4ed8;
+            font-size: 14px; font-weight: 700; color: var(--primary-color);
             margin-bottom: 15px; display: flex; align-items: center; gap: 8px;
         }
         
@@ -171,7 +171,7 @@ $num_no_leidas = count($notif_no_leidas);
             display: flex; gap: 12px; margin-bottom: 15px; align-items: center;
         }
         .tip-icon {
-            background: #eef2ff; width: 40px; height: 40px;
+            background: var(--bg-hover); width: 40px; height: 40px;
             border-radius: 10px; display: flex; align-items: center; justify-content: center;
             color: #2563eb; flex-shrink: 0;
         }
@@ -179,40 +179,45 @@ $num_no_leidas = count($notif_no_leidas);
 
         /* Preview and Summary Cards */
         .preview-box {
-            background: #fff; border-radius: 8px; padding: 20px; border: 1px solid #e2e8f0;
+            background: var(--card-bg); border-radius: 8px; padding: 20px; border: 1px solid var(--border-color);
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
-        .preview-header { display: flex; gap: 15px; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #f1f5f9; }
+        .preview-header { display: flex; gap: 15px; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
         .preview-icon { background: #2563eb; color: #fff; border-radius: 10px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; }
-        .preview-title { font-weight: 700; font-size: 15px; color: #1e293b; line-height: 1.3; }
+        .preview-title { font-weight: 700; font-size: 15px; color: var(--text-dark); line-height: 1.3; }
         
         .meta-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
         .meta-row { display: flex; align-items: flex-start; }
-        .meta-label { display: flex; align-items: center; gap: 8px; width: 100px; color: #64748b; font-size: 13px; font-weight: 500; }
+        .meta-label { display: flex; align-items: center; gap: 8px; width: 100px; color: var(--text-muted); font-size: 13px; font-weight: 500; }
         .meta-label i { width: 16px; height: 16px; color: #2563eb; }
-        .meta-value { font-size: 13px; color: #0f172a; font-weight: 600; flex: 1; }
+        .meta-value { font-size: 13px; color: var(--text-dark); font-weight: 600; flex: 1; }
         
         .checkbox-group { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 15px; }
         .checkbox-group input { margin-top: 3px; }
-        .checkbox-label { font-size: 14px; font-weight: 600; color: #1e293b; }
-        .checkbox-desc { font-size: 12px; color: #64748b; }
+        .checkbox-label { font-size: 14px; font-weight: 600; color: var(--text-dark); }
+        .checkbox-desc { font-size: 12px; color: var(--text-muted); }
     </style>
 </head>
 <body>
     <aside class="sidebar">
         <div class="profile-section">
-            <div class="profile-pic" style="background:#fff; margin:0 auto 10px;"></div>
+            <div class="profile-pic" style="background:var(--card-bg); margin:0 auto 10px;"></div>
             <div class="profile-name"><?= htmlspecialchars($_SESSION['nombre']) ?></div>
             <div class="profile-role">Docente | CBTis 270</div>
         </div>
         <ul class="nav-links">
-            <li><a href="#" class="nav-item">Inicio</a></li>
             <li><a href="docente.php" class="nav-item active">Asignar Tareas</a></li>
             <li><a href="gestionar_tareas.php" class="nav-item">Administrar Tareas</a></li>
             <li><a href="revisar_entregas.php" class="nav-item">Revisar Entregas</a></li>
+            <li><a href="calendario_docente.php" class="nav-item">Calendario</a></li>
         </ul>
         <div style="margin-top: auto; padding: 20px;">
-            <a href="index.php" class="nav-item">Cerrar sesión</a>
+            
+        <button class="theme-toggle-btn" onclick="toggleTheme()" style="display:flex; align-items:center; gap:10px; padding:12px 20px; margin:20px 0; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); color:var(--sidebar-text); border-radius:8px; cursor:pointer; width:100%;">
+            <i data-lucide="moon" id="theme-icon"></i>
+            <span id="theme-text">Modo Claro</span>
+        </button>
+<a href="index.php" class="nav-item">Cerrar sesión</a>
         </div>
     </aside>
 
@@ -234,14 +239,14 @@ $num_no_leidas = count($notif_no_leidas);
                         <div class="notif-header">Notificaciones</div>
                         <div class="notif-list">
                             <?php if(count($notificaciones) == 0): ?>
-                                <div style="padding: 15px; text-align:center; color: #64748b;">No tienes notificaciones</div>
+                                <div style="padding: 15px; text-align:center; color: var(--text-muted);">No tienes notificaciones</div>
                             <?php else: ?>
                                 <?php foreach($notificaciones as $n): ?>
                                     <div class="notif-item">
                                         <div class="notif-icon"><i data-lucide="mail"></i></div>
                                         <div>
                                             <div class="notif-title"><?= htmlspecialchars($n['titulo']) ?></div>
-                                            <div style="color: #333;"><?= htmlspecialchars($n['mensaje']) ?></div>
+                                            <div style="color: var(--text-dark);"><?= htmlspecialchars($n['mensaje']) ?></div>
                                             <div class="notif-time"><?= htmlspecialchars($n['fecha']) ?></div>
                                         </div>
                                     </div>
@@ -268,8 +273,8 @@ $num_no_leidas = count($notif_no_leidas);
                         <i data-lucide="pen-line"></i>
                     </div>
                     <div>
-                        <h1 style="margin: 0; font-size: 24px; color: #0f172a;">Asignar nueva actividad</h1>
-                        <p style="margin: 5px 0 0 0; color: #64748b; font-size: 14px;">Crea y asigna una actividad a tu grupo</p>
+                        <h1 style="margin: 0; font-size: 24px; color: var(--text-dark);">Asignar nueva actividad</h1>
+                        <p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 14px;">Crea y asigna una actividad a tu grupo</p>
                     </div>
                 </div>
 
@@ -297,7 +302,7 @@ $num_no_leidas = count($notif_no_leidas);
 
                     <div class="form-group">
                         <label>Descripción <span style="color:red">*</span></label>
-                        <div id="editor-container" style="height: 150px; background: #fff;"></div>
+                        <div id="editor-container" style="height: 150px; background: var(--card-bg);"></div>
                     </div>
 
                     <div class="section-title">2. Asignación</div>
@@ -346,7 +351,7 @@ $num_no_leidas = count($notif_no_leidas);
                         <div class="drop-zone" id="dropZoneContainer" onclick="document.getElementById('fileInput').click()">
                             <div class="icon"><i data-lucide="cloud-upload" style="width:32px; height:32px;"></i></div>
                             <div style="color: #2563eb; font-weight: 600;">Arrastra y suelta archivos aquí</div>
-                            <div style="font-size: 12px; color: #64748b; margin-top: 5px;">o haz clic para seleccionar</div>
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">o haz clic para seleccionar</div>
                             <div style="font-size: 11px; color: #94a3b8; margin-top: 10px;">Formatos: PDF, DOCX, PPTX, ZIP (Máx 50MB)</div>
                             <input type="file" name="recurso[]" id="fileInput" style="display:none" multiple onchange="showFileName(this)">
                         </div>
@@ -403,7 +408,7 @@ $num_no_leidas = count($notif_no_leidas);
                     </div>
                 </div>
 
-                <div class="side-card" style="background: #eef2ff; border-color: #e0e7ff;">
+                <div class="side-card" style="background: var(--bg-hover); border-color: #e0e7ff;">
                     <h3><i data-lucide="eye" style="color:#2563eb;"></i> Vista previa para los alumnos</h3>
                     <div class="preview-box">
                         <div class="preview-header">
@@ -527,12 +532,12 @@ $num_no_leidas = count($notif_no_leidas);
                 for(let i=0; i < uploadedFiles.files.length; i++) {
                     let file = uploadedFiles.files[i];
                     let fileRow = document.createElement('div');
-                    fileRow.style.cssText = 'display:flex; align-items:center; justify-content:space-between; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 8px; padding: 12px 15px; width: 100%; box-sizing: border-box;';
+                    fileRow.style.cssText = 'display:flex; align-items:center; justify-content:space-between; background: var(--bg-hover); border: 1px solid #c7d2fe; border-radius: 8px; padding: 12px 15px; width: 100%; box-sizing: border-box;';
                     
                     fileRow.innerHTML = `
                         <div style="display:flex; align-items:center; gap: 10px; overflow:hidden;">
                             <i data-lucide="file-text" style="color:#2563eb; width:20px; height:20px; flex-shrink:0;"></i>
-                            <span style="font-weight: 600; color: #1e293b; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${file.name}</span>
+                            <span style="font-weight: 600; color: var(--text-dark); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${file.name}</span>
                         </div>
                         <button type="button" onclick="removeFile(${i}, event)" style="background:transparent; border:none; color:#ef4444; cursor:pointer; display:flex; align-items:center; gap:5px; font-size:13px; font-weight:600; padding:5px; border-radius:4px; flex-shrink:0;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='transparent'">
                             <i data-lucide="trash-2" style="width:16px; height:16px;"></i>
@@ -607,5 +612,53 @@ $num_no_leidas = count($notif_no_leidas);
             }
         }
     </script>
+
+    <script>
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute("data-theme") || "dark";
+            const newTheme = currentTheme === "dark" ? "light" : "dark";
+            document.documentElement.setAttribute("data-theme", newTheme);
+            
+            let oldIcon = document.getElementById("theme-icon");
+            if(oldIcon) {
+                let newIcon = document.createElement("i");
+                newIcon.id = "theme-icon";
+                newIcon.setAttribute("data-lucide", newTheme === "light" ? "moon" : "sun");
+                oldIcon.parentNode.replaceChild(newIcon, oldIcon);
+            }
+            
+            const text = document.getElementById("theme-text");
+            if (newTheme === "light") {
+                if(text) text.innerText = "Modo Oscuro";
+            } else {
+                if(text) text.innerText = "Modo Claro";
+            }
+            if(window.lucide) lucide.createIcons();
+            
+            localStorage.setItem("theme", newTheme);
+        }
+        
+        document.addEventListener("DOMContentLoaded", () => {
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme) {
+                document.documentElement.setAttribute("data-theme", savedTheme);
+                let oldIcon = document.getElementById("theme-icon");
+                if(oldIcon) {
+                    let newIcon = document.createElement("i");
+                    newIcon.id = "theme-icon";
+                    newIcon.setAttribute("data-lucide", savedTheme === "light" ? "moon" : "sun");
+                    oldIcon.parentNode.replaceChild(newIcon, oldIcon);
+                }
+                const text = document.getElementById("theme-text");
+                if (savedTheme === "light") {
+                    if(text) text.innerText = "Modo Oscuro";
+                } else {
+                    if(text) text.innerText = "Modo Claro";
+                }
+                if(window.lucide) lucide.createIcons();
+            }
+        });
+    </script>
+
 </body>
 </html>

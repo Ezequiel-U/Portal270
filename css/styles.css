@@ -1,6 +1,7 @@
-:root {
+
+:root[data-theme="light"] {
     --sidebar-bg: #051543;
-    --sidebar-active: #0d47a1; /* fallback */
+    --sidebar-active: #0d47a1;
     --sidebar-active-vibrant: #1a56ff;
     --sidebar-text: #e0e6ed;
     --content-bg: #f5f6fb;
@@ -14,7 +15,28 @@
     --success-text: #166534;
     --pending-bg: #e0e7ff;
     --pending-text: #3730a3;
-    
+    --bg-hover: #f1f5f9;
+    --input-bg: #ffffff;
+}
+
+:root {
+    --sidebar-bg: #0b0f19;
+    --sidebar-active: #1e293b;
+    --sidebar-active-vibrant: #3b82f6;
+    --sidebar-text: #94a3b8;
+    --content-bg: #0f172a;
+    --card-bg: #1e293b;
+    --primary-color: #3b82f6;
+    --primary-hover: #2563eb;
+    --text-dark: #f1f5f9;
+    --text-muted: #94a3b8;
+    --border-color: #334155;
+    --success-bg: rgba(22, 163, 74, 0.15);
+    --success-text: #4ade80;
+    --pending-bg: rgba(79, 70, 229, 0.15);
+    --pending-text: #818cf8;
+    --bg-hover: #334155;
+    --input-bg: #0f172a;
     --font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
@@ -218,14 +240,14 @@ body {
     border-radius: 12px;
     padding: 40px;
     text-align: center;
-    background: #f8fafc;
+    background: var(--bg-hover);
     transition: all 0.3s ease;
     margin-bottom: 20px;
 }
 
 .upload-area:hover {
     border-color: var(--primary-color);
-    background: #f1f5f9;
+    background: var(--bg-hover);
 }
 
 .btn {
@@ -260,7 +282,7 @@ body {
 }
 
 .btn-outline:hover {
-    background: #f1f5f9;
+    background: var(--bg-hover);
 }
 
 /* Forms */
@@ -324,7 +346,7 @@ body {
 
 .notification-bell {
     font-size: 24px;
-    background: #fff;
+    background: var(--card-bg);
     border-radius: 50%;
     padding: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
@@ -351,7 +373,7 @@ body {
     top: 45px;
     right: 0;
     width: 320px;
-    background: #fff;
+    background: var(--card-bg);
     border-radius: 12px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     display: none;
@@ -369,7 +391,7 @@ body {
     padding: 15px;
     font-weight: bold;
     border-bottom: 1px solid var(--border-color);
-    background: #f8fafc;
+    background: var(--bg-hover);
 }
 
 .notif-list {
@@ -386,7 +408,7 @@ body {
     align-items: flex-start;
 }
 .notif-item:hover {
-    background: #f1f5f9;
+    background: var(--bg-hover);
 }
 .notif-icon {
     font-size: 18px;
@@ -489,4 +511,39 @@ body {
         width: 300px;
         max-width: 90vw; /* Asegurar que no se salga de la pantalla */
     }
+}
+
+/* Dark Mode Overrides */
+.fc-toolbar-title, .fc-col-header-cell-cushion, .fc-daygrid-day-number { color: var(--text-dark) !important; }
+.fc-theme-standard td, .fc-theme-standard th { border-color: var(--border-color) !important; }
+.fc-day-today { background-color: var(--bg-hover) !important; }
+.fc .fc-button-primary { background-color: var(--primary-color); border-color: var(--primary-color); }
+input, select, textarea { background-color: var(--input-bg) !important; color: var(--text-dark) !important; border-color: var(--border-color) !important; }
+option { background-color: var(--input-bg); color: var(--text-dark); }
+.modal-content { background-color: var(--card-bg) !important; }
+.ql-toolbar, .ql-container { border-color: var(--border-color) !important; }
+.ql-editor.ql-blank::before { color: var(--text-muted) !important; }
+.ql-snow .ql-stroke { stroke: var(--text-muted); }
+.ql-snow .ql-fill { fill: var(--text-muted); }
+
+
+.theme-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    margin: 20px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--sidebar-text);
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    margin-top: auto; /* pushes it to bottom of sidebar */
+}
+.theme-toggle-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
 }
